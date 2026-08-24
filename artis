@@ -1,0 +1,261 @@
+sub reset_active(boxType as Integer)
+
+    dim c as Container = scene.findContainer("UPDATEBOX").getChildContainerByIndex(boxType)
+    dim box_active as Container
+    dim i as Integer
+
+    for i = 0 to c.ChildContainerCount - 1
+        box_active = c.GetChildContainerByIndex(i)
+        box_active.Active = false
+    next
+
+    Scene.UpdateSceneTree()
+
+end sub
+
+
+sub set_index(boxType as Integer, boxName as String, targetIndex as Integer)
+
+    dim c as Container
+    dim box as Container
+    dim target as Container
+    dim currentIndex as Integer
+
+    c = Scene.FindContainer("BOX_LAYOUTS").GetChildContainerByIndex(boxType)
+
+    box = c.FindSubContainer(boxName)
+
+    if not box.Valid then
+        exit sub
+    end if
+
+    box.Active = true
+
+    currentIndex = box.GetLocalIndex()
+
+    ' ulang HANYA sampai box benar-benar sampai target
+    do while currentIndex <> targetIndex
+
+        target = c.GetChildContainerByIndex(targetIndex)
+
+        if currentIndex > targetIndex then
+            box.MoveTo(target, TL_PREVIOUS)
+        else
+            box.MoveTo(target, TL_NEXT)
+        end if
+
+        Scene.UpdateSceneTree()
+
+        currentIndex = box.GetLocalIndex()
+
+    loop
+
+end sub
+
+sub OnInitParameters()
+registerPushButton("order", "order", 0)
+'registerPushButton("reset", "reset", 1)
+'RegisterParameterInt("idxLayout", "Layout", 5, 0, 15)
+end sub
+
+sub OnExecAction(buttonId As Integer)
+'if buttonId = 0 then
+'testIndex()
+'elseif buttonId = 1 then
+'retake(6)
+'end if
+'sub_apply_layout()
+
+retake_button()
+
+
+end sub
+
+sub getboxes(data as String)
+
+    dim bundle as Array[String]
+    dim items as Array[String]
+    dim pair as Array[String]
+
+    dim boxType as Integer
+    dim i as Integer
+
+    ' Pecah boxType | boxData
+    data.Split("|", bundle)
+
+    if bundle.Size <> 2 then
+        exit sub
+    end if
+
+    boxType = CInt(bundle[0])
+
+    ' Pecah BOX_01:1,BOX_02:2
+    bundle[1].Split(",", items)
+
+    println "BOX TYPE = " & CStr(boxType)
+
+    for i = 0 to items.Size - 1
+
+        pair.Clear()
+        items[i].Split(":", pair)
+
+        if pair.Size = 2 then
+            println "BOX = " & pair[0]
+            println "INPUT = " & pair[1]
+        end if
+
+    next
+
+end sub
+
+sub apply_layout(boxType as Integer, boxData as String)
+
+    dim items as Array[String]
+    dim pair as Array[String]
+    dim boxNames as Array[String]
+    dim targetIndexes as Array[Integer]
+    dim i as Integer
+
+    ' ORDER DARI JS
+    boxData.Split(",", items)
+
+    for i = 0 to items.Size - 1
+
+        pair.Clear()
+        items[i].Split(":", pair)
+
+        if pair.Size = 2 then
+            boxNames.Push(pair[0])
+            targetIndexes.Push(CInt(pair[1]))
+        end if
+	
+    next
+
+    ' APPLY ORDER
+    for i = boxNames.Size - 1 to 0 step -1
+
+        println "MOVE " & boxNames[i] & " -> " & CStr(targetIndexes[i])
+
+        set_index(boxType,boxNames[i],targetIndexes[i])
+
+    next
+
+    ' UPDATE CUMA SEKALI
+    'Scene.UpdateSceneTree()
+
+    Scene.FindContainer("BOX_LAYOUTS").ScriptPluginInstance.SetParameterInt("idxLayout", boxType)
+    Scene.FindContainer("BOX_LAYOUTS").ScriptPluginInstance.Script.Execute()
+
+    println "===== FINAL ====="
+    print_order(boxType)
+
+end sub
+
+'sub testIndex()
+'set_index(1, "BOX_01", 0)
+'set_index(1, "BOX_02", 1)
+'Scene.FindContainer("BOX_LAYOUTS").ScriptPluginInstance.SetParameterInt("idxLayout", 1)
+'Scene.FindContainer("BOX_LAYOUTS").ScriptPluginInstance.Script.Execute()
+'end sub
+
+sub retake_it(boxType as Integer)
+
+'    println "===== BEFORE RETAKE ====="
+'    print_order(boxType)
+'
+'    reset_reorder(boxType)
+'
+'    println "===== AFTER RESET ====="
+'    print_order(boxType)
+'
+'    'Scene.FindContainer("BOX_LAYOUTS").ScriptPluginInstance.SetParameterInt("idxLayout", boxType)
+'    'Scene.FindContainer("BOX_LAYOUTS").ScriptPluginInstance.Script.Execute()
+'
+'    println "===== AFTER EXECUTE ====="
+'    print_order(boxType)
+
+end sub
+
+sub retake(boxType as Integer)
+
+    println "===== BEFORE RETAKE ====="
+    print_order(boxType)
+
+    reset_reorder(boxType)
+
+    println "===== AFTER RESET ====="
+    print_order(boxType)
+
+    Scene.FindContainer("BOX_LAYOUTS").ScriptPluginInstance.SetParameterInt("idxLayout", boxType)
+    Scene.FindContainer("BOX_LAYOUTS").ScriptPluginInstance.Script.Execute()
+
+    println "===== AFTER EXECUTE ====="
+    print_order(boxType)
+
+end sub
+
+dim forretake as Integer
+
+sub for_retake(boxType as Integer)
+
+ forretake  = boxType
+end sub
+
+sub retake_button()
+retake(forretake )
+end sub
+
+
+sub print_order(boxType as Integer)
+
+    dim c as Container
+    dim i as Integer
+
+    c = Scene.FindContainer("BOX_LAYOUTS").GetChildContainerByIndex(boxType)
+
+    for i = 0 to c.ChildContainerCount - 1
+        println CStr(i) & " = " & c.GetChildContainerByIndex(i).Name
+    next
+
+end sub
+
+sub reset_reorder(boxType as Integer)
+
+    dim c as Container
+    dim box as Container
+    dim target as Container
+    dim i as Integer
+    dim boxName as String
+
+    c = Scene.FindContainer("BOX_LAYOUTS").GetChildContainerByIndex(boxType)
+
+    ' Susun BOX_10 ... BOX_01
+    ' masing-masing dipindah ke paling depan.
+    ' Hasil akhir = BOX_01, BOX_02, BOX_03 ... BOX_10
+
+    for i = 9 to 0 step -1
+
+        if i < 9 then
+            boxName = "BOX_0" & CStr(i + 1)
+        else
+            boxName = "BOX_10"
+        end if
+
+        box = c.FindSubContainer(boxName)
+
+        if box.Valid then
+
+            target = c.GetChildContainerByIndex(0)
+
+            if box <> target then
+                box.MoveTo(target, TL_PREVIOUS)
+            end if
+
+        end if
+
+    next
+
+    Scene.UpdateSceneTree()
+
+end sub
+
