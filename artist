@@ -1,0 +1,582 @@
+dim a as String
+dim b as Integer
+
+
+' ==========================================================
+' HTML EDITED
+' HANYA SIMPAN DATA
+'
+' contoh:
+' 1|BOX_01:0,BOX_02:2
+' ==========================================================
+
+sub msg_layout_edited(dataLayout as String)
+
+    a = dataLayout
+
+    println "===== HTML EDITED RECEIVED ====="
+    println "A SAVED = " & a
+
+end sub
+
+sub exec_msg_layout_edited()
+
+    dim bundle as Array[String]
+    dim boxType as Integer
+    dim boxData as String
+
+    ' Kalau tidak ada edited data dari HTML, jangan lakukan apa-apa
+    if a = "" then
+
+        println "===== NO EDITED DATA - SKIP ====="
+        exit sub
+
+    end if
+
+    println "===== EXEC EDITED ====="
+    println "DATA = " & a
+
+    a.Split("|", bundle)
+
+    if bundle.Size <> 2 then
+
+        println "INVALID EDITED DATA"
+        exit sub
+
+    end if
+
+    boxType = CInt(bundle[0])
+    boxData = bundle[1]
+
+    apply_layout(boxType, boxData)
+
+    ' Setelah dipakai, kosongkan
+    a = ""
+
+end sub
+
+' ==========================================================
+' DIRECTOR RESET
+' HANYA SIMPAN BOX TYPE
+'
+' contoh:
+' msg_reset_edited 3
+' ==========================================================
+
+sub msg_reset_edited(boxType as Integer)
+
+ Scene.FindContainer("BOX_LAYOUTS").ScriptPluginInstance.Script.Execute()
+
+    dim boxData as String
+
+    println "===== RESET DEFAULT ====="
+    println "BOX TYPE = " & CStr(boxType)
+
+    ' ==========================================
+    ' DEFAULT DATA PER BOX TYPE
+    ' ==========================================
+
+    if boxType = 0 then
+
+        ' 1BOX
+        boxData = "BOX_01:0"
+
+    elseif boxType = 1 then
+
+        ' 2BOX
+        boxData = "BOX_01:0,BOX_02:1"
+
+    elseif boxType = 2 then
+
+        ' 2BOX_BIG_SMALL
+        boxData = "BOX_01:0,BOX_02:1"
+
+    elseif boxType = 3 then
+
+        ' 3BOX
+        boxData = "BOX_01:0,BOX_02:1,BOX_03:2"
+
+        elseif boxType = 4 then
+    
+            ' 3BOX_SP
+            boxData = "BOX_01:0,BOX_02:1,BOX_03:2"
+    
+        elseif boxType = 5 then
+    
+            ' 4BOX
+            boxData = "BOX_01:0,BOX_02:1,BOX_03:2,BOX_04:3"
+    
+        elseif boxType = 6 then
+    
+            ' 5BOX
+            boxData = "BOX_01:0,BOX_02:1,BOX_03:2,BOX_04:3,BOX_05:4"
+    
+        elseif boxType = 7 then
+    
+            ' 6BOX
+            boxData = "BOX_01:0,BOX_02:1,BOX_03:2,BOX_04:3,BOX_05:4,BOX_06:5"
+    
+        elseif boxType = 8 then
+    
+            ' 7BOX
+            boxData = "BOX_01:0,BOX_02:1,BOX_03:2,BOX_04:3,BOX_05:4,BOX_06:5,BOX_07:6"
+    
+        elseif boxType = 9 then
+    
+            ' 7BOX_CENTER
+            boxData = "BOX_01:0,BOX_02:1,BOX_03:2,BOX_04:3,BOX_05:4,BOX_06:5,BOX_07:6"
+    
+        elseif boxType = 10 then
+    
+            ' 8BOX
+            boxData = "BOX_01:0,BOX_02:1,BOX_03:2,BOX_04:3,BOX_05:4,BOX_06:5,BOX_07:6,BOX_08:7"
+    
+        elseif boxType = 11 then
+    
+            ' 9BOX
+            boxData = "BOX_01:0,BOX_02:1,BOX_03:2,BOX_04:3,BOX_05:4,BOX_06:5,BOX_07:6,BOX_08:7,BOX_09:8"
+    
+        elseif boxType = 12 then
+    
+            ' 10BOX
+            boxData = "BOX_01:0,BOX_02:1,BOX_03:2,BOX_04:3,BOX_05:4,BOX_06:5,BOX_07:6,BOX_08:7,BOX_09:8,BOX_10:9"
+    
+        elseif boxType = 13 then
+    
+            ' 12BOX
+            boxData = "BOX_01:0,BOX_02:1,BOX_03:2,BOX_04:3,BOX_05:4,BOX_06:5,BOX_07:6,BOX_08:7,BOX_09:8,BOX_10:9,BOX_11:10,BOX_12:11"
+    
+        elseif boxType = 14 then
+    
+            ' 1BOX_SP
+            boxData = "BOX_01:0"
+    
+        elseif boxType = 15 then
+    
+            ' 1BOX_SP_V
+            boxData = "BOX_01:0"
+    
+        elseif boxType = 16 then
+    
+            ' 2BOX_SP_V
+            boxData = "BOX_01:0,BOX_02:1"
+    
+        elseif boxType = 17 then
+    
+            ' 3BOX_SP_V
+            boxData = "BOX_01:0,BOX_02:1,BOX_03:2"
+    
+        elseif boxType = 18 then
+    
+            ' 4BOX_SP_V
+            boxData = "BOX_01:0,BOX_02:1,BOX_03:2,BOX_04:3"
+    
+        else
+    
+            println "UNKNOWN BOX TYPE = " & CStr(boxType)
+            exit sub
+    
+        end if
+
+
+    println "DEFAULT DATA = " & boxData
+
+
+    ' ==========================================
+    ' BALIKIN ORDER KE NORMAL DULU
+    ' ==========================================
+
+    reset_reorder(boxType)
+
+
+    ' ==========================================
+    ' APPLY DEFAULT DATA
+    ' ==========================================
+
+    apply_layout(boxType, boxData)
+
+
+    println "===== RESET DEFAULT DONE ====="
+
+end sub
+
+
+' ==========================================================
+' ACTION / KEYFRAME 0
+' RESET + RELAYOUT DEFAULT
+' ==========================================================
+
+sub exec_msg_reset_edited()
+
+    println "===== EXEC RESET DEFAULT ====="
+    println "BOX TYPE = " & CStr(b)
+
+    ' Reset urutan BOX
+    reset_reorder(b)
+
+    ' Set layout default
+    Scene.FindContainer("BOX_LAYOUTS").ScriptPluginInstance.SetParameterInt("idxLayout", b)
+
+    ' Execute default layout
+    Scene.FindContainer("BOX_LAYOUTS").ScriptPluginInstance.Script.Execute2()
+
+    Scene.UpdateSceneTree()
+
+    println "===== RESET DEFAULT DONE ====="
+
+    print_order(b)
+
+end sub
+
+
+' ==========================================================
+' ACTION / KEYFRAME 1
+' APPLY EDITED LAYOUT
+' ==========================================================
+
+
+
+' ==========================================================
+' APPLY EDITED LAYOUT
+' ==========================================================
+
+sub apply_layout(boxType as Integer, boxData as String)
+
+    dim items as Array[String]
+    dim pair as Array[String]
+
+    dim i as Integer
+
+    dim boxNames as Array[String]
+    dim targetIndexes as Array[Integer]
+
+    println "===== APPLY LAYOUT ====="
+    println "BOX TYPE = " & CStr(boxType)
+    println "BOX DATA = " & boxData
+
+    ' ------------------------------------------------------
+    ' Parse:
+    '
+    ' BOX_01:0,BOX_02:2
+    ' ------------------------------------------------------
+
+    boxData.Split(",", items)
+
+    for i = 0 to items.Size - 1
+
+        pair.Clear()
+
+        items[i].Split(":", pair)
+
+        if pair.Size = 2 then
+
+            boxNames.Push(pair[0])
+            targetIndexes.Push(CInt(pair[1]))
+
+        end if
+
+    next
+
+
+    ' ------------------------------------------------------
+    ' Apply reorder
+    ' dari target terbesar ke terkecil
+    ' ------------------------------------------------------
+
+    for i = boxNames.Size - 1 to 0 step -1
+
+        println "MOVE " & boxNames[i] & " -> " & CStr(targetIndexes[i])
+
+        set_index(boxType,boxNames[i],targetIndexes[i])
+
+    next
+
+
+    ' ------------------------------------------------------
+    ' Set layout edited
+    ' ------------------------------------------------------
+
+    Scene.FindContainer("BOX_LAYOUTS").ScriptPluginInstance.SetParameterInt("idxLayout", boxType)
+
+    Scene.FindContainer("BOX_LAYOUTS").ScriptPluginInstance.Script.Execute2()
+
+    Scene.UpdateSceneTree()
+
+
+    println "===== EDITED FINAL ====="
+
+    print_order(boxType)
+
+end sub
+
+
+' ==========================================================
+' MOVE BOX KE TARGET INDEX
+' ==========================================================
+
+sub set_index(boxType as Integer, boxName as String, targetIndex as Integer)
+
+    dim c as Container
+    dim box as Container
+    dim target as Container
+
+    dim currentIndex as Integer
+
+
+    c = Scene.FindContainer("BOX_LAYOUTS").GetChildContainerByIndex(boxType)
+
+    if not c.Valid then
+
+        println "INVALID LAYOUT INDEX = " & CStr(boxType)
+
+        exit sub
+
+    end if
+
+
+    box = c.FindSubContainer(boxName)
+
+    if not box.Valid then
+
+        println "BOX NOT FOUND = " & boxName
+
+        exit sub
+
+    end if
+
+
+    box.Active = true
+
+    currentIndex = box.GetLocalIndex()
+
+
+    println "SET INDEX: " & boxName & " " & CStr(currentIndex) & " -> " & CStr(targetIndex)
+
+
+    if currentIndex = targetIndex then
+        exit sub
+    end if
+
+
+    target = c.GetChildContainerByIndex(targetIndex)
+
+    if not target.Valid then
+
+        println "INVALID TARGET INDEX = " & CStr(targetIndex)
+
+        exit sub
+
+    end if
+
+
+    if currentIndex > targetIndex then
+
+        box.MoveTo(target, TL_PREVIOUS)
+
+    else
+
+        box.MoveTo(target, TL_NEXT)
+
+    end if
+
+end sub
+
+
+' ==========================================================
+' RESET ORDER
+'
+' hasil:
+' BOX_01
+' BOX_02
+' BOX_03
+' ...
+' BOX_10
+' ==========================================================
+
+sub reset_reorder(boxType as Integer)
+
+    dim c as Container
+    dim box as Container
+    dim target as Container
+
+    dim i as Integer
+    dim boxName as String
+
+
+    println "===== RESET REORDER ====="
+    println "BOX TYPE = " & CStr(boxType)
+
+
+    c = Scene.FindContainer("BOX_LAYOUTS").GetChildContainerByIndex(boxType)
+
+    if not c.Valid then
+
+        println "INVALID LAYOUT INDEX = " & CStr(boxType)
+
+        exit sub
+
+    end if
+
+
+    ' ------------------------------------------------------
+    ' Susun BOX_10 ... BOX_01
+    ' masing-masing dipindah ke depan
+    '
+    ' hasil akhirnya:
+    ' BOX_01
+    ' BOX_02
+    ' ...
+    ' BOX_10
+    ' ------------------------------------------------------
+
+    for i = 9 to 0 step -1
+
+        if i < 9 then
+
+            boxName = "BOX_0" & CStr(i + 1)
+
+        else
+
+            boxName = "BOX_10"
+
+        end if
+
+
+        box = c.FindSubContainer(boxName)
+
+
+        if box.Valid then
+
+            target = c.GetChildContainerByIndex(0)
+
+            if box <> target then
+
+                box.MoveTo(target, TL_PREVIOUS)
+
+            end if
+
+        end if
+
+    next
+
+
+    Scene.UpdateSceneTree()
+
+end sub
+
+
+' ==========================================================
+' PRINT ORDER
+' ==========================================================
+
+sub print_order(boxType as Integer)
+
+    dim c as Container
+    dim i as Integer
+
+
+    c = Scene.FindContainer("BOX_LAYOUTS").GetChildContainerByIndex(boxType)
+
+    if not c.Valid then
+
+        println "INVALID LAYOUT INDEX = " & CStr(boxType)
+
+        exit sub
+
+    end if
+
+
+    println "===== ORDER ====="
+
+
+    for i = 0 to c.ChildContainerCount - 1
+
+        println CStr(i) & " = " & c.GetChildContainerByIndex(i).Name
+
+    next
+
+end sub
+
+
+' ==========================================================
+' OPTIONAL GET BOXES
+' ==========================================================
+
+sub getboxes(data as String)
+
+    dim bundle as Array[String]
+    dim items as Array[String]
+    dim pair as Array[String]
+
+    dim boxType as Integer
+    dim i as Integer
+
+
+    data.Split("|", bundle)
+
+
+    if bundle.Size <> 2 then
+        exit sub
+    end if
+
+
+    boxType = CInt(bundle[0])
+
+    bundle[1].Split(",", items)
+
+
+    println "BOX TYPE = " & CStr(boxType)
+
+
+    for i = 0 to items.Size - 1
+
+        pair.Clear()
+
+        items[i].Split(":", pair)
+
+
+        if pair.Size = 2 then
+
+            println "BOX = " & pair[0]
+            println "INPUT = " & pair[1]
+
+        end if
+
+    next
+
+end sub
+
+
+' ==========================================================
+' PARAMETERS
+'
+' BUTTON 0 = RESET DEFAULT
+' BUTTON 1 = EDITED RELAYOUT
+' ==========================================================
+
+sub OnInitParameters()
+
+    RegisterPushButton("reset","RESET DEFAULT",0)
+
+    RegisterPushButton("edited","EDITED RELAYOUT",1)
+
+end sub
+
+
+' ==========================================================
+' ACTION
+' ==========================================================
+
+sub OnExecAction(buttonId As Integer)
+
+    if buttonId = 0 then
+
+        exec_msg_reset_edited()
+
+    elseif buttonId = 1 then
+
+        exec_msg_layout_edited()
+
+    end if
+
+end sub
