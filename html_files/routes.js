@@ -6,7 +6,7 @@ const path = require("path");
 
 const router = express.Router();
 
-const CONFIG_PATH = path.join(__dirname, "config.json");
+const CONFIG_PATH = path.join(__dirname, "../config.json");
 
 router.get("/playlists", async (req, res) => {
     try {
@@ -125,12 +125,18 @@ router.post("/out", async (req, res) => {
 
 router.post("/director-reset", async (req, res) => {
     try {
-        // Read latest config
         const config = JSON.parse(
             fs.readFileSync(CONFIG_PATH, "utf8")
         );
 
-        // Director Integration OFF
+        const [source, boxTypeRaw] = req.body.trim().split("|");
+        const boxType = parseInt(boxTypeRaw, 10);
+
+        console.log("DIRECTOR RESET REQUEST:");
+        console.log("source  =", source);
+        console.log("boxType =", boxType);
+
+        // Director integration disabled
         if (!config.director?.enabled) {
             console.log("DIRECTOR RESET IGNORED - DISABLED");
 
@@ -141,7 +147,16 @@ router.post("/director-reset", async (req, res) => {
             });
         }
 
-        const boxType = parseInt(req.body, 10);
+        // Only accept Director requests
+        if (source !== "director") {
+            console.log("DIRECTOR RESET IGNORED - INVALID SOURCE:", source);
+
+            return res.json({
+                ok: true,
+                ignored: true,
+                reason: "invalid_source"
+            });
+        }
 
         if (Number.isNaN(boxType)) {
             return res.status(400).json({
@@ -149,8 +164,6 @@ router.post("/director-reset", async (req, res) => {
                 error: "Invalid boxType"
             });
         }
-
-        console.log("DIRECTOR RESET:", boxType);
 
         const resetCommand =
             `-1 MAIN_SCENE*TREE*$SCRIPT*SCRIPT INVOKE msg_director_take ${boxType}`;
@@ -163,6 +176,7 @@ router.post("/director-reset", async (req, res) => {
 
         res.json({
             ok: true,
+            source,
             boxType
         });
 
