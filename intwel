@@ -1,0 +1,20 @@
+<ref>/logic/element/run</ref>
+	<env name="director_reset">
+		<http_request>
+			<method>POST</method>
+			<uri>http://127.0.0.1:9191/api/director-reset</uri>
+			<headers>
+				<field>
+					<name>Content-Type</name>
+					<value>text/plain</value>
+				</field>
+			</headers>
+			<body><![CDATA[]]><ref><var>element</var>/data/SetBoxes</ref><![CDATA[]]></body>
+			<on_response>
+				<log>Director reset sent</log>
+				<log>
+					<var>body</var>
+				</log>
+			</on_response>
+		</http_request>
+	</env>
